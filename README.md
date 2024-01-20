@@ -35,6 +35,7 @@ yuze 是一款纯C实现的轻量的内网穿透工具，支持正向，反向so
     
             a) ./yuze -m yuze_listen -s 7878 -e 9999
                         // 在具有公网IP的主机上添加转接隧道，将7878端口收到的代理请求转交给反连9999端口的主机
+                        
             b) ./yuze -m r_server -r 127.0.0.1 -s 9999        
                         // 将目标主机反向连接公网转接主机
     
@@ -54,15 +55,16 @@ yuze 是一款纯C实现的轻量的内网穿透工具，支持正向，反向so
         
             a)  ./yuze -m s_server -l 9999
                     // 在 Host_Two 主机上利用 s_server 模式启动 9999 端口的正向 socks 代理
+                    
             b)  ./yuze -m yuze_tran -s 7878 -d 127.0.0.1 -e 9999 
                     // 在Host_One上将 7878 端口收到的 socks 代理请求转交给 Host_Two 主机。
-            c)  HackTools 可通过访问 127.0.0.1:7878 来使用 127.0.0.1 主机提供的 socks5 代理。
+                    
+            c)  HackTools可使用Host_One主机的7878端口提供的socks5代理
             
         2.  获得目标网络内两台主机 A、B 的权限，情况描述如下：
         
                 A 主机：  目标网络的边界主机，无公网 IP，无法访问特定资源。
                 B 主机：  目标网络内部主机，可访问特定资源，却无法回连公网。
-    
                 A 主机可直连 B 主机
     
     				  一台可控公网IP主机                    可控内网主机A         可访问指定资源的主机B
@@ -73,12 +75,15 @@ yuze 是一款纯C实现的轻量的内网穿透工具，支持正向，反向so
             a)  ./yuze -m yuze_listen -s 7878 -e 8888
                         // 在 Host_One 公网主机添加转接隧道，将 7878 收到的代理请求
                         // 转交给反连 8888 端口的主机
+                        
             b)  ./yuze -m s_server -l 9999
                         // 在 Host_Three 主机上利用 s_server 模式启动 9999 端口的正向 socks 代理
+                        
             c)  ./yuze -m yuze_slave -r 127.0.0.1 -s 8888 -d 127.0.0.1 -e 9999
                         // 在 Host_Two 上，通过工具的 yuze_slave 模式，
                         // 打通Host_One:8888 和 Host_Three:9999 之间的通讯隧道
-            d)  HackTools 可通过访问 1.1.1.1:1080 来使用 2.2.2.3 主机提供的 socks5 代理
+                        
+            d)  HackTools可使用Host_One主机的7878端口提供的socks5代理
 
 
 
