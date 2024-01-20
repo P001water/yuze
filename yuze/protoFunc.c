@@ -20,7 +20,7 @@ int check_proto_version(SOCKET clnt_socket)
             // If the first byte of the received data indicates SOCKSv5... the value symbols that socket proto version
             if (buffer[0] == 5)
             {
-                
+
                 bytes_sent = socket_send(clnt_sock, response_v5_ok, reply_length); // Send a response indicating SOCKSv5 is supported.
                 //printf("Success: --> SOCKSv5 proto connect now!\n");
                 if (bytes_sent == reply_length)
@@ -75,9 +75,9 @@ SOCKET extractRequestHeader(SOCKET clnt_socket)
             Reply_Cannot_Build_Target_Now(clnt_socket, 0x08);
             return -1;
         }
-        
+
         port = (port_bytes[0] << 8) | port_bytes[1];  // 从两个字节（通常是网络字节顺序，即大端序）中构建一个16位的端口号。
-        printf("[+] TCP ---> %s:%d\n", destination, port); 
+        printf("[+] TCP ---> %s:%d\n", destination, port);
         dest_sock = socket_connect(destination, port);
         if (dest_sock == -1) {
             Reply_Cannot_Build_Target_Reason(clnt_socket);
@@ -90,11 +90,11 @@ SOCKET extractRequestHeader(SOCKET clnt_socket)
 
     case 3: // Domain name
         receivedBytes = socket_recv(clnt_socket, domainlen, 1);
-        if (receivedBytes != 1) 
+        if (receivedBytes != 1)
             return -1;
 
         domainLength = domainlen[0];  // 客户端请求的第一个字节为域名的长度
-        if (domainLength <= 0) 
+        if (domainLength <= 0)
             return -1;
 
         receivedBytes = socket_recv(clnt_socket, destination, domainLength);
@@ -129,7 +129,7 @@ SOCKET extractRequestHeader(SOCKET clnt_socket)
         puts("[-] Not support IPv6");
         return -1;
 
-    default: 
+    default:
         Reply_Cannot_Build_Target_Now(clnt_socket, 0x08);
         puts("[-] NOT IPv4, IPv6, or URL?");
         return -1;
@@ -152,7 +152,17 @@ int extract_and_tunnel(SOCKET* clnt_sockParam)
         }
         else
         {
+            //Sleep(1);
             tunnel_sock_to_sock(clnt_sock, dest_sock);
         }
     }
+}
+
+
+int FillinSocketbuff(char* s) {
+    int  i;
+    for (i = 0; i < RSOCKET_SERVER_NOTICE_LEN; i++) {
+        s[i] = '\0';
+    }
+    return True;
 }

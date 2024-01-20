@@ -10,9 +10,7 @@ struct option long_options[] = {
     {"refport",     required_argument, 0, 's'},
     {"desthost",    required_argument, 0, 'd'},
     {"destport",    required_argument, 0, 'e'},
-    {"usectime",    required_argument, 0, 't'},
-    // This must be the last element in the array
-    {0, 0, 0, 0}
+    {0, 0, 0, 0} // This must be the last element in the array
 };
 
 void banner() {
@@ -26,15 +24,16 @@ void banner() {
     printf("\n\n");
 }
 
+
 /*
-* main func and parse commandline is here  
+* main func and parse commandline is here
 */
 int main(int argc, char* argv[], const char** envp) {
     socket_api_init(); // windows platform init socket api call
-    socks_Pool_init();
+    tunnel_Pool_init();
     banner();
 
-    while ((flag = getopt_long(argc, argv, "hvm:l:r:s:d:e:t:", long_options, NULL)) != EOF) {
+    while ((flag = getopt_long(argc, argv, "hvm:l:r:s:d:e:", long_options, NULL)) != EOF) {
         switch (flag) {
         case 'h':
             puts("[+] no time to help");
@@ -43,11 +42,11 @@ int main(int argc, char* argv[], const char** envp) {
             printf("\nVERSION : %s \n\n", "yuze 1.0"); break;
         case 'm':
             if (!strcmp("s_server", optarg)) {
-                action = 1; 
+                action = 1;
                 break;
             }
             if (!strcmp("r_server", optarg)) {
-                action = 2; 
+                action = 2;
                 break;
             }
             if (!strcmp("yuze_listen", optarg)) {
@@ -55,11 +54,11 @@ int main(int argc, char* argv[], const char** envp) {
                 break;
             }
             if (!strcmp("yuze_tran", optarg)) {
-                action = 4; 
+                action = 4;
                 break;
             }
             if (!strcmp("yuze_slave", optarg)) {
-                action = 5; 
+                action = 5;
                 break;
             }
         case 'l':
@@ -70,7 +69,7 @@ int main(int argc, char* argv[], const char** envp) {
             refHost[sizeof(refHost) - 1] = '\0'; // 确保终结符
             break;
         case 's':
-            refPort = atol(optarg); 
+            refPort = atol(optarg);
             break;
         case 'd':
             strcpy(destHost, optarg, sizeof(destHost) - 1);
@@ -78,7 +77,7 @@ int main(int argc, char* argv[], const char** envp) {
             //printf("%s", connHost);
             break;
         case 'e':
-            destPort = atol(optarg); 
+            destPort = atol(optarg);
             break;
         case 't':
             puts("set time is no longer supported");
@@ -88,7 +87,7 @@ int main(int argc, char* argv[], const char** envp) {
             exit(EXIT_FAILURE);
         }
     }
-        
+
     // main action is here 注意break的语序
     switch (action)
     {
@@ -96,16 +95,16 @@ int main(int argc, char* argv[], const char** envp) {
         create_socks_server(listenPort);
         break;
     case 2:
-        //create_rsocks_server(refHost, refPort);
+        create_rsocks_client(refHost, refPort);
         break;
     case 3:
-        //yuze_listen(refPort, destPort);
+        yuze_listen(refPort, destPort);
         break;
     case 4:
-        //yuze_tran(refPort, destHost, destPort);
+        yuze_tran(refPort, destHost, destPort);
         break;
     case 5:
-        //yuze_slave(refHost, refPort, destHost, destPort);
+        yuze_slave(refHost, refPort, destHost, destPort);
         break;
     default:
         puts("[-] No input  Learn more and use");

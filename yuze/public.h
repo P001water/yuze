@@ -13,6 +13,7 @@
 #ifdef WIN32
 #include<WinSock2.h>
 #include<ws2tcpip.h>
+#include<stdlib.h>
 //#include<unistd.h>
 #include<Windows.h>
 #pragma comment(lib,"Ws2_32.lib")
@@ -25,7 +26,7 @@
 #endif
 
 
-// write C function module 
+// self-write C function module 
 #include "protoFunc.h"
 #include "RedesignAPI.h"
 #include "tunnelSock2sock.h"
@@ -36,6 +37,18 @@
 #define True              1
 #define False             0
 
+#define SOCKET_CONNECT_ERROR -1
+#define SOCKET_LISTEN_BACKLOG 1000
+
+
+//design for rsocks server
+#define CONTROL_SOCKET 2
+#define CONFIRM_CONTROL_SOCKET 1
+#define NEW_PROXY_SOCKET 4
+#define RSOCKET_SERVER_NOTICE_LEN 3
+
+
+//design for main.c -> parse CMD Command
 int flag;
 int action;
 int listenPort;
@@ -43,6 +56,6 @@ char refHost[100];
 int refPort;
 char destHost[100];
 int destPort;
+
+
 #endif // !_PUBLIC_H_
-
-

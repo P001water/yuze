@@ -41,9 +41,6 @@
     <ClInclude Include="protoFunc.h">
       <Filter>源文件</Filter>
     </ClInclude>
-    <ClInclude Include="public.h">
-      <Filter>源文件</Filter>
-    </ClInclude>
     <ClInclude Include="RedesignAPI.h">
       <Filter>源文件</Filter>
     </ClInclude>
@@ -52,6 +49,9 @@
     </ClInclude>
     <ClInclude Include="tunnelSock2sock.h">
       <Filter>源文件</Filter>
+    </ClInclude>
+    <ClInclude Include="public.h">
+      <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

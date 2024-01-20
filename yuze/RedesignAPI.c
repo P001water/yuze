@@ -7,7 +7,7 @@ int socket_api_init()
     WSADATA wsd;
     if (WSAStartup(MAKEWORD(2, 2), &wsd) != 0)
     {
-        perror("[-] Windows WSAStartup failed");
+        puts("[-] Windows WSAStartup failed");
         return 1;
     }
 #else
@@ -17,7 +17,7 @@ int socket_api_init()
 }
 
 // creat server socket and listen
-int socket_initServer(int port, int backlog)
+int socket_initListenServer(int port, int backlog)
 {
     int s, yes = 1;
     struct sockaddr_in serverAddr;
@@ -56,7 +56,7 @@ int socket_initServer(int port, int backlog)
 SOCKET socket_acceptClient(SOCKET server_socket) {
     int s;
 
-    while (1) {
+    while (True) {
         struct sockaddr_in sa;
         int slen = sizeof(sa);
         s = accept(server_socket, (struct sockaddr*)&sa, &slen);
@@ -71,7 +71,7 @@ SOCKET socket_acceptClient(SOCKET server_socket) {
     return s;
 }
 
-// Connect to remote server socket (serverName , port)
+// Connect to remote server socket
 SOCKET socket_connect(char* serverName, int port)
 {
     SOCKET ConnectSocket;
@@ -140,13 +140,13 @@ SOCKET socket_connect(char* serverName, int port)
     return -1;
 }
 
-// socket (SOCKET套接字，发送字符串缓冲区，长度)
+// socket_recv(SOCKET，buff，length)
 int socket_recv(SOCKET s, char* buf, int len)
 {
     return recv(s, buf, len, 0);
 }
 
-// socket (SOCKET套接字，接收字符串缓冲区，长度)
+// socket_send(SOCKET，buff，length)
 int socket_send(SOCKET s, char* buf, int len)
 {
     return send(s, buf, len, 0);
