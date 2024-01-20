@@ -10,7 +10,7 @@
 #include<string.h>    
 #include<stdlib.h>  
 
-#ifdef WIN32
+#ifdef _WIN32
 #include<WinSock2.h>
 #include<ws2tcpip.h>
 #include<stdlib.h>
