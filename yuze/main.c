@@ -1,5 +1,5 @@
 #include "public.h"
-#include<getopt.h> 
+#include <getopt.h> 
 
 struct option long_options[] = {
     {"help",        no_argument,       0, 'h'},
@@ -24,12 +24,19 @@ void banner() {
     printf("\n\n");
 }
 
+//design for main.c -> parse CMD Command
+int flag;
+int action;
+int listenPort;
+char refHost[100];
+int refPort;
+char destHost[100];
+int destPort;
 
-/*
-* main func and parse commandline is here
-*/
+
+// main func and parse commandline is here
 int main(int argc, char* argv[], const char** envp) {
-    socket_api_init(); // windows platform init socket api call
+    socket_api_init();
     tunnel_Pool_init();
     banner();
 
@@ -39,7 +46,8 @@ int main(int argc, char* argv[], const char** envp) {
             puts("[+] no time to help");
             exit(EXIT_SUCCESS);
         case 'v':
-            printf("\nVERSION : %s \n\n", "yuze 1.0"); break;
+            printf("\nVERSION : %s \n\n", "yuze.0.1.0");
+            break;
         case 'm':
             if (!strcmp("s_server", optarg)) {
                 action = 1;
@@ -65,22 +73,19 @@ int main(int argc, char* argv[], const char** envp) {
             listenPort = (int)strtol(optarg, NULL, 10);
             break;
         case 'r':
-            strcpy(refHost, optarg, sizeof(refHost) - 1);
-            refHost[sizeof(refHost) - 1] = '\0'; // 确保终结符
+            strcpy(refHost, optarg);
+            refHost[sizeof(refHost) - 1] = '\0';
             break;
         case 's':
             refPort = atol(optarg);
             break;
         case 'd':
-            strcpy(destHost, optarg, sizeof(destHost) - 1);
+            strcpy(destHost, optarg);
             destHost[sizeof(destHost) - 1] = '\0';
             //printf("%s", connHost);
             break;
         case 'e':
             destPort = atol(optarg);
-            break;
-        case 't':
-            puts("set time is no longer supported");
             break;
         default:
             puts("[-] No input Check action");
@@ -88,7 +93,6 @@ int main(int argc, char* argv[], const char** envp) {
         }
     }
 
-    // main action is here 注意break的语序
     switch (action)
     {
     case 1:
@@ -107,9 +111,7 @@ int main(int argc, char* argv[], const char** envp) {
         yuze_slave(refHost, refPort, destHost, destPort);
         break;
     default:
-        puts("[-] No input  Learn more and use");
+        puts("[-] No input  Learn more to use");
         exit(EXIT_FAILURE);
     }
 }
-
-

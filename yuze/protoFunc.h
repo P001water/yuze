@@ -5,9 +5,9 @@
 
 #define MAXTUNNELNUM 1000
 
-int extract_and_tunnel(SOCKET* clnt_sockParam);
-int check_proto_version(SOCKET clnt_socket);
-SOCKET extractRequestHeader(SOCKET clnt_socket);
+int extract_and_tunnel(int* clnt_sockParam);
+int check_proto_version(int clnt_socket);
+int extractRequestHeader(int clnt_socket);
 
 int FillinSocketbuff(char* s);
 

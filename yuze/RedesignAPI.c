@@ -1,6 +1,5 @@
 #include "RedesignAPI.h"
 
-
 int socket_api_init()
 {
 #ifdef WIN32  // init socket lib for win
@@ -11,7 +10,7 @@ int socket_api_init()
         return 1;
     }
 #else
-    signal(SIGPIPE, SIG_IGN);
+    signal(SIGPIPE, SIG_IGN); // ignore signal to avoid
 #endif
     return 1;
 }
@@ -24,25 +23,23 @@ int socket_initListenServer(int port, int backlog)
 
     s = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 
-    setsockopt(s, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(yes));
+    //setsockopt(s, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(yes));
 
     serverAddr.sin_family = AF_INET;
     serverAddr.sin_addr.s_addr = htonl(INADDR_ANY);
     serverAddr.sin_port = htons(port);
 
-    if (bind(s, (struct sockaddr*)&serverAddr, sizeof(serverAddr)) == SOCKET_ERROR) {
-        printf("[-] Bind failed with error: %d\n", WSAGetLastError());
-        closesocket(s);
-        WSACleanup();
+    if (bind(s, (struct sockaddr*)&serverAddr, sizeof(serverAddr)) < 0) {
+        printf("[-] Bind failed\n");
+        socket_close(s);
         return -1;
     }
 
 
-    if (listen(s, SOMAXCONN) == SOCKET_ERROR) // backlog = SOMAXCONN , wait quene depend on system
+    if (listen(s, SOMAXCONN) < 0) // backlog = SOMAXCONN , wait quene depend on system
     {
-        printf("[-] Listen failed with error: %ld\n", WSAGetLastError());
-        closesocket(s);
-        WSACleanup();
+        printf("[-] Listen failed\n");
+        socket_close(s);
         return -1;
     }
     return s;
@@ -53,7 +50,7 @@ int socket_initListenServer(int port, int backlog)
  * be accepted, we accept it and return -1 on error or the new client
  * socket on success.
  */
-SOCKET socket_acceptClient(SOCKET server_socket) {
+int socket_acceptClient(int server_socket) {
     int s;
 
     while (True) {
@@ -72,23 +69,15 @@ SOCKET socket_acceptClient(SOCKET server_socket) {
 }
 
 // Connect to remote server socket
-SOCKET socket_connect(char* serverName, int port)
+int socket_connect(char* serverName, int port)
 {
-    SOCKET ConnectSocket;
+    int ConnectSocket;
     ConnectSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-    if (ConnectSocket == INVALID_SOCKET)
+    if (ConnectSocket < 0)
     {
         puts("[-] Create Socket Failed");
         return -1;
     }
-
-    u_long iMode = 0;
-    // If iMode = 0, blocking is enabled;
-    // If iMode != 0, non-blocking mode is enabled.
-    // function in ioctlsocket
-    int iResult = ioctlsocket(ConnectSocket, FIONBIO, &iMode);
-    if (iResult != NO_ERROR)
-        printf("ioctlsocket failed with error: %ld\n", iResult);
 
     struct hostent* hostInfo;
     hostInfo = gethostbyname(serverName);
@@ -100,60 +89,78 @@ SOCKET socket_connect(char* serverName, int port)
 
     struct sockaddr_in clntService;
     clntService.sin_family = AF_INET;
+#ifdef WIN32
     clntService.sin_addr = *((struct in_addr*)hostInfo->h_addr);
+#else
+    clntService.sin_addr = *((struct in_addr*)hostInfo->h_addr_list[0]);
+#endif // 
+
+
     clntService.sin_port = htons(port);
-    iResult = connect(ConnectSocket, (struct sockaddr*)&clntService, sizeof(clntService));
+    int iResult = connect(ConnectSocket, (struct sockaddr*)&clntService, sizeof(clntService));
     if (iResult == 0) {
         return ConnectSocket;
     }
 
-    if (iMode != 0) {
-        //因为是非阻塞的，这个时候错误码应该是WSAEWOULDBLOCK，Linux下是EINPROGRESS
-        if (iResult < 0 && WSAGetLastError() != WSAEWOULDBLOCK) {
-            printf("[-] Connect failed with error: %ld\n", WSAGetLastError());
-            return -1;
+    for (;;) {
+        fd_set writeset;
+        struct timeval tv = { 2,0 };
+
+        FD_ZERO(&writeset);
+        FD_SET(ConnectSocket, &writeset);
+
+        iResult = select(ConnectSocket + 1, NULL, &writeset, NULL, &tv);
+        if (iResult < 0) {
+            printf("[-] Connect failed");
+            break;
         }
-
-        for (;;) {
-            fd_set writeset;
-            struct timeval tv = { 2,0 };
-
-            FD_ZERO(&writeset);
-            FD_SET(ConnectSocket, &writeset);
-
-            iResult = select(ConnectSocket + 1, NULL, &writeset, NULL, &tv);
-            if (iResult < 0) {
-                printf("[-] Connect failed with error: %ld\n", WSAGetLastError());
-                break;
-            }
-            else if (iResult == 0) {
-                puts("[-] Connect timeout");
-                break;
-            }
-            else {
-                if (FD_ISSET(ConnectSocket, &writeset)) {
-                    return ConnectSocket;
-                }
+        else if (iResult == 0) {
+            puts("[-] Connect timeout");
+            break;
+        }
+        else {
+            if (FD_ISSET(ConnectSocket, &writeset)) {
+                return ConnectSocket;
             }
         }
     }
+
     return -1;
 }
 
-// socket_recv(SOCKET，buff，length)
-int socket_recv(SOCKET s, char* buf, int len)
+// socket_recv(int，buff，length)
+int socket_recv(int s, char* buf, int len)
 {
     return recv(s, buf, len, 0);
 }
 
-// socket_send(SOCKET，buff，length)
-int socket_send(SOCKET s, char* buf, int len)
+// socket_send(int，buff，length)
+int socket_send(int s, char* buf, int len)
 {
+    //int rc = send(s, buf, len, 0);
+    //if (errno == EPIPE) {
+    //    puts("[-] remote Host socket close");
+    //    return -1;
+    //}
+    //else
+    //{
+    //    return rc;
+    //}
     return send(s, buf, len, 0);
 }
 
+int socket_close(int socket) {
+    if (socket > 0) {
+#ifdef WIN32
+        closesocket(socket);
+#else
+        close(socket);
+#endif
+    }
+    return 1;
+}
 
-int Reply_Cannot_Build_Target_Now(SOCKET s, char cmd)
+int Reply_Cannot_Build_Target_Now(int s, char cmd)
 {
     char replaybuf[4]; // Buffer that will be sent
     int msglen = 4; // Represents length of the message
@@ -168,11 +175,9 @@ int Reply_Cannot_Build_Target_Now(SOCKET s, char cmd)
     return 1;
 }
 
-int Reply_Cannot_Build_Target_Reason(SOCKET s)
-{
-    int Error; // eax
-
-    Error = WSAGetLastError();
+int Reply_Cannot_Build_Target_Reason(int s) {
+#ifdef WIN32
+    int Error = WSAGetLastError();
     if (Error == 10060)
     {
         Reply_Cannot_Build_Target_Now(s, 6);
@@ -192,11 +197,27 @@ int Reply_Cannot_Build_Target_Reason(SOCKET s)
     {
         Reply_Cannot_Build_Target_Now(s, 3);
     }
+#else
+    switch (errno) {
+    case ENETUNREACH:
+        Reply_Cannot_Build_Target_Now(s, 0x03);
+        break;
+    case EHOSTUNREACH:
+        Reply_Cannot_Build_Target_Now(s, 0x04);
+        break;
+    case ECONNREFUSED:
+        Reply_Cannot_Build_Target_Now(s, 0x05);
+        break;
+    case ETIMEDOUT:
+        Reply_Cannot_Build_Target_Now(s, 0x06);
+        break;
+    }
+#endif
     return 1;
 }
 
 
-int Reply_Build_Target_OK(SOCKET s)
+int Reply_Build_Target_OK(int s)
 {
     char replaybuf[10]; // Buffer that will be sent
     int msglen = 10; // Represents length of the message

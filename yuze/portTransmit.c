@@ -1,10 +1,12 @@
 #include "portTransmit.h"
 
+//design for reverse connect service
+int control_socket;
+
 // -m yuze_tran -s 7878 -d 127.0.0.1 -e 9999 将7878 端口收到的socks代理请求转交给127.0.0.1打开正向监听的主机
-// Forword data to remote host ,remote host should be Forward connection host
 int yuze_tran(int refPort, char* destHost, int destPort) {
-    SOCKET server_sock;
-    printf("[+] Port forwart to RemoteHost 0.0.0.0:%d <--[yuze]--> %s:%d\n", refPort, destHost, destPort);
+    int server_sock;
+    printf("[+] Proxy forwart to RemoteHost 0.0.0.0:%d <--[yuze]--> %s:%d\n", refPort, destHost, destPort);
 
     server_sock = socket_initListenServer(refPort, 500);
     for (;;) {
@@ -26,16 +28,16 @@ int yuze_tran(int refPort, char* destHost, int destPort) {
         }
         else if (selectRet) {
             if (FD_ISSET(server_sock, &readset)) {
-                SOCKET clnt_sock = socket_acceptClient(server_sock);
-                if (clnt_sock == SOCKET_ERROR) {
+                int clnt_sock = socket_acceptClient(server_sock);
+                if (clnt_sock == -1) {
                     //puts("[+] Client Connected");
                 }
 
-                SOCKET dest_sock = socket_connect(destHost, destPort);
-                if (dest_sock == SOCKET_ERROR) {
+                int dest_sock = socket_connect(destHost, destPort);
+                if (dest_sock == -1) {
                     //puts("[-] RemoteHost Connected closed");
-                    closesocket(dest_sock);
-                    exit(EXIT_FAILURE);
+                    socket_close(dest_sock);
+                    exit(1);
                 }
                 else {
                     //puts("[+] Connect RemoteHost Succeed");
@@ -47,18 +49,17 @@ int yuze_tran(int refPort, char* destHost, int destPort) {
 }
 
 
-// -m yuze_slave -r 1.1.1.1 -s 8888 -d 2.2.2.3 -e 9999
-// 在 2.2.2.2 上，通过工具的 yuze_slave 方式，打通1.1.1.1:8888 和 2.2.2.3:9999 之间的通讯隧道
+// -m yuze_slave -r 127.0.0.1 -s 8888 -d 127.0.0.1 -e 9999
 int yuze_slave(char* ref_host, int ref_port, char* dest_host, int dest_port) {
     int readSize;
     char newSocketNotice[RSOCKET_SERVER_NOTICE_LEN];
     slaveStructalias slaveConfig;
     printf("[+] yuze_slave %s:%d <--[yuze]--> %s:%d\n", ref_host, ref_port, dest_host, dest_port);
 
-    SOCKET control_socket = rsocksClient_init_ControlSocket(refHost, refPort);
-    if (control_socket == SOCKET_ERROR) {
+    int control_socket = rsocksClient_init_ControlSocket(ref_host, ref_port);
+    if (control_socket < 0) {
         printf("[-] Can not get Control_socket connect\n");
-        closesocket(control_socket);
+        socket_close(control_socket);
         return -1;
     }
 
@@ -90,7 +91,12 @@ int yuze_slave(char* ref_host, int ref_port, char* dest_host, int dest_port) {
                     slaveConfig.destport = dest_port;
 
                     slaveConfig.tunnel_id = newSocketNotice[2] - '0' + 48;
-                    CreateThread(0, 0, (LPTHREAD_START_ROUTINE)yuzeslave_build_tunnel, &slaveConfig, 0, 0);
+#ifndef WIN32
+                    pthread_t thread_id;
+#else
+                    HANDLE thread_id;
+#endif
+                    creatThread_multi_Platform(thread_id, yuzeslave_build_tunnel, slaveConfig)
                 }
                 else
                 {
@@ -105,7 +111,6 @@ int yuze_slave(char* ref_host, int ref_port, char* dest_host, int dest_port) {
 
 int yuzeslave_build_tunnel(slaveStructalias* slavesConfig) {
     char rhost[300], dhost[300];
-    char char_tunnel_id;
     char NewSocketNoticebuff[RSOCKET_SERVER_NOTICE_LEN];
 
     strncpy(rhost, slavesConfig->refHost, 300);
@@ -114,7 +119,7 @@ int yuzeslave_build_tunnel(slaveStructalias* slavesConfig) {
     int dport = slavesConfig->destport;
     char tunnel_id = slavesConfig->tunnel_id;
 
-    SOCKET proxySocket = socket_connect(rhost, rport);
+    int proxySocket = socket_connect(rhost, rport);
     FillinSocketbuff(NewSocketNoticebuff);
     NewSocketNoticebuff[0] = True;
     NewSocketNoticebuff[1] = NEW_PROXY_SOCKET;
@@ -124,8 +129,8 @@ int yuzeslave_build_tunnel(slaveStructalias* slavesConfig) {
         puts("[-] ");
     }
 
-    SOCKET dest_socket = socket_connect(dhost, dport);
-    if (dest_socket != SOCKET_ERROR) { // Check the sockets proto version
+    int dest_socket = socket_connect(dhost, dport);
+    if (dest_socket > 0) { // Check the sockets proto version
         tunnel_sock_to_sock(proxySocket, dest_socket);
     }
 }
@@ -133,32 +138,39 @@ int yuzeslave_build_tunnel(slaveStructalias* slavesConfig) {
 int yuze_listen(int clntPort, int rsocksPort) {
     printf("[+] Port Forwarding 0.0.0.0:%d <--[yuze]--> 0.0.0.0:%d\n", clntPort, rsocksPort);
 
-    if (CreateThread(0, 0, (LPTHREAD_START_ROUTINE)yuzelisten_create_clntPortServer, &clntPort, 0, 0) == NULL) {
+#ifndef WIN32
+    pthread_t thread_id;
+#else
+    HANDLE thread_id;
+#endif
+    void* result = creatThread_multi_Platform(thread_id, yuzelisten_create_clntPortServer, clntPort);
+    if (result == NULL) {
         printf("Error: --> %d start server\n", clntPort);
         return -1;
     }
 
-    if (CreateThread(0, 0, (LPTHREAD_START_ROUTINE)yuzelisten_create_rsocksPortServer, &rsocksPort, 0, 0) == NULL) {
+    result = creatThread_multi_Platform(thread_id, yuzelisten_create_rsocksPortServer, rsocksPort);
+    if (result == NULL) {
         printf("Error: --> %d start server\n", rsocksPort);
         return -1;
     }
 
     //to prevent the Host process exit
     for (;;) {
-        Sleep(1000);
+        sleep_multi_Platform(10000);
     }
     return 1;
 }
 
 // for listen socket connect from client 
 int yuzelisten_create_clntPortServer(int* p_lstPort) {
-    SOCKET serv_sock;
+    int serv_sock;
     int lstPort = *p_lstPort;
     char sendbuf[RSOCKET_SERVER_NOTICE_LEN], recvbuf[RSOCKET_SERVER_NOTICE_LEN];
     int sendlen, recvlen;
 
     serv_sock = socket_initListenServer(lstPort, 500);
-    if (serv_sock == INVALID_SOCKET)
+    if (serv_sock < 0)
     {
         printf("[-] Error: --> Unable to start server on port %d.\n", lstPort);
         exit(1);
@@ -168,8 +180,8 @@ int yuzelisten_create_clntPortServer(int* p_lstPort) {
     while (True) {
         struct sockaddr_in sa;
         int slen = sizeof(sa);
-        SOCKET s = accept(serv_sock, (struct sockaddr*)&sa, &slen);
-        if (s == SOCKET_ERROR) {
+        int s = accept(serv_sock, (struct sockaddr*)&sa, &slen);
+        if (s < 0) {
             if (errno == EINTR)
                 continue; /* Try again. */
             else
@@ -190,13 +202,13 @@ int yuzelisten_create_clntPortServer(int* p_lstPort) {
 
 // for listen socket connect from the reverse connect host
 int yuzelisten_create_rsocksPortServer(int* p_rlstPort) {
-    SOCKET serv_sock;
+    int serv_sock;
     int rlstPort = *p_rlstPort;
     char sendbuf[RSOCKET_SERVER_NOTICE_LEN], recvbuf[RSOCKET_SERVER_NOTICE_LEN];
     int sendlen, recvlen;
 
     serv_sock = socket_initListenServer(rlstPort, SOCKET_LISTEN_BACKLOG);
-    if (serv_sock == INVALID_SOCKET)
+    if (serv_sock < 0)
     {
         printf("[-] Error: --> Unable to start server on port %d.\n", rlstPort);
         exit(1);
@@ -206,7 +218,7 @@ int yuzelisten_create_rsocksPortServer(int* p_rlstPort) {
     while (True) {
         struct sockaddr_in sa;
         int slen = sizeof(sa);
-        SOCKET s = accept(serv_sock, (struct sockaddr*)&sa, &slen);
+        int s = accept(serv_sock, (struct sockaddr*)&sa, &slen);
         if (s == -1) {
             if (errno == EINTR)
                 continue; /* Try again. */

@@ -1,9 +1,8 @@
 ﻿#include "protoFunc.h"
 
-
-int check_proto_version(SOCKET clnt_socket)
+int check_proto_version(int clnt_socket)
 {
-    SOCKET clnt_sock = clnt_socket;
+    int clnt_sock = clnt_socket;
     char buffer[500];
     char response_v5_ok[2] = { 5, 0 };   // Response for SOCKS5
     char response_v5_fail[2] = { 5, 255 }; // Response indicating failure
@@ -39,7 +38,7 @@ int check_proto_version(SOCKET clnt_socket)
 }
 
 // parse socksv5 protocol to get destination socket
-SOCKET extractRequestHeader(SOCKET clnt_socket)
+int extractRequestHeader(int clnt_socket)
 {
     char reqheader[4];
     char domainlen[200];
@@ -51,7 +50,7 @@ SOCKET extractRequestHeader(SOCKET clnt_socket)
     unsigned char port_bytes[2];
     char addrtype; // to note the socksv5 proto value
 
-    SOCKET dest_sock;
+    int dest_sock;
     int receivedBytes;
 
     receivedBytes = socket_recv(clnt_socket, reqheader, 4);
@@ -138,21 +137,20 @@ SOCKET extractRequestHeader(SOCKET clnt_socket)
 }
 
 
-int extract_and_tunnel(SOCKET* clnt_sockParam)
+int extract_and_tunnel(int* clnt_sockParam)
 {
     //puts("[*] come to extract_and_tunnel func");
-    SOCKET clnt_sock = *clnt_sockParam, dest_sock;
+    int clnt_sock = *clnt_sockParam, dest_sock;
 
     if (check_proto_version(clnt_sock) == True) { // Check the sockets proto version
-        Sleep(1);
+        sleep_multi_Platform(1);
         dest_sock = extractRequestHeader(clnt_sock); // from socksv5 proto parse the destination url
         if (dest_sock == -1) {
-            closesocket(clnt_sock);
+            socket_close(clnt_sock);
             return -1;
         }
         else
         {
-            //Sleep(1);
             tunnel_sock_to_sock(clnt_sock, dest_sock);
         }
     }

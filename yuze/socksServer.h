@@ -9,9 +9,6 @@ typedef struct rsocksStruct {
 }rsocksStructalias;
 
 
-//design for reverse connect service
-SOCKET control_socket;
-
 int create_socks_server(int listenPort);
 int create_rsocks_client(char* refHost, int refPort);
 

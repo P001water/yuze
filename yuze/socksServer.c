@@ -2,10 +2,10 @@
 
 // Function that support the forward agent
 int create_socks_server(int listenPort) {
-    SOCKET serv_sock;
+    int serv_sock;
 
     serv_sock = socket_initListenServer(listenPort, SOCKET_LISTEN_BACKLOG);
-    if (serv_sock == SOCKET_ERROR)
+    if (serv_sock < 0)
     {
         printf("[-] Error --> Unable to start server on port %d.\n", listenPort);
         exit(1);
@@ -15,17 +15,22 @@ int create_socks_server(int listenPort) {
     while (True) {
         struct sockaddr_in sa;
         int slen = sizeof(sa);
-        SOCKET s = accept(serv_sock, (struct sockaddr*)&sa, &slen);
+        int s = accept(serv_sock, (struct sockaddr*)&sa, &slen);
         if (s == -1) {
             if (errno == EINTR)
                 continue; /* Try again. */
             else
                 break;
         }
-        SOCKET param = s;
-        CreateThread(0, 0, (LPTHREAD_START_ROUTINE)extract_and_tunnel, &param, 0, 0);
-        s = INVALID_SOCKET;
-        //Sleep(1);
+        int param = s;
+
+#ifndef WIN32
+        pthread_t thread_id;
+#else
+        HANDLE thread_id;
+#endif
+        creatThread_multi_Platform(thread_id, extract_and_tunnel, param);
+        s = -1;
     }
 }
 
@@ -34,7 +39,7 @@ int create_rsocks_client(char* refHost, int refPort) {
     rsocksStructalias rserverConfig;
     printf("[+] r_server %s:%d <--[yuze]--> rsocks server\n", refHost, refPort);
 
-    SOCKET control_socket = rsocksClient_init_ControlSocket(refHost, refPort);
+    int control_socket = rsocksClient_init_ControlSocket(refHost, refPort);
     if (control_socket == -1) {
         printf("[-] Can not get the Control_socket Connect\n");
     }
@@ -65,7 +70,12 @@ int create_rsocks_client(char* refHost, int refPort) {
                     strncpy(rserverConfig.Host, refHost, 300);
                     rserverConfig.port = refPort;
                     rserverConfig.tunnel_id = newSocketNotice[2] - '0' + 48; // convert int from char[]
-                    CreateThread(0, 0, (LPTHREAD_START_ROUTINE)rsocksClient_build_tunnel, &rserverConfig, 0, 0);
+#ifndef WIN32
+                    pthread_t thread_id;
+#else
+                    HANDLE thread_id;
+#endif
+                    creatThread_multi_Platform(thread_id, rsocksClient_build_tunnel, rserverConfig);
                 }
                 else
                 {
@@ -80,7 +90,7 @@ int create_rsocks_client(char* refHost, int refPort) {
 int rsocksClient_init_ControlSocket(char* refHost, int refPort) {
     char NewSocketNoticebuff[RSOCKET_SERVER_NOTICE_LEN];
 
-    SOCKET controlSocket = socket_connect(refHost, refPort);
+    int controlSocket = socket_connect(refHost, refPort);
     if (controlSocket == SOCKET_CONNECT_ERROR) {
         printf("[-] Reverse Proxy Error on connect %s:%d [can not connect]\n", refHost, refPort);
         return SOCKET_CONNECT_ERROR;
@@ -108,14 +118,13 @@ int rsocksClient_init_ControlSocket(char* refHost, int refPort) {
 
 int rsocksClient_build_tunnel(rsocksStructalias* rserverConfig) {
     char rhost[300];
-    char char_tunnel_id;
     char NewSocketNoticebuff[RSOCKET_SERVER_NOTICE_LEN];
 
     strncpy(rhost, rserverConfig->Host, 300);
     int rport = rserverConfig->port;
     char tunnel_id = rserverConfig->tunnel_id;
 
-    SOCKET proxySocket = socket_connect(rhost, rport);
+    int proxySocket = socket_connect(rhost, rport);
 
     FillinSocketbuff(NewSocketNoticebuff);
     NewSocketNoticebuff[0] = True;
@@ -128,10 +137,10 @@ int rsocksClient_build_tunnel(rsocksStructalias* rserverConfig) {
     }
 
     if (check_proto_version(proxySocket) == True) { // Check the sockets proto version
-        Sleep(1);
-        SOCKET dest_sock = extractRequestHeader(proxySocket); // from socksv5 proto parse the destination url
+        sleep_multi_Platform(1);
+        int dest_sock = extractRequestHeader(proxySocket); // from socksv5 proto parse the destination url
         if (dest_sock == -1) {
-            closesocket(proxySocket);
+            socket_close(proxySocket);
             return -1;
         }
         else
