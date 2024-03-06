@@ -143,14 +143,14 @@ int yuze_listen(int clntPort, int rsocksPort) {
 #else
     HANDLE thread_id;
 #endif
-    void* result = creatThread_multi_Platform(thread_id, yuzelisten_create_clntPortServer, clntPort);
-    if (result == NULL) {
+    int result = creatThread_multi_Platform(thread_id, yuzelisten_create_clntPortServer, clntPort);
+    if (result < 0) {
         printf("Error: --> %d start server\n", clntPort);
         return -1;
     }
 
     result = creatThread_multi_Platform(thread_id, yuzelisten_create_rsocksPortServer, rsocksPort);
-    if (result == NULL) {
+    if (result < 0) {
         printf("Error: --> %d start server\n", rsocksPort);
         return -1;
     }
