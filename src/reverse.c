@@ -21,7 +21,7 @@ int reverseProxy(int controlPort, int socksPort, const char* connect_server, con
 }
 
 int reverseProxyServer(int controlPort, int socksPort) {
-    printf("[+] socks5 ports:%d, control ports %d\n", socksPort, controlPort);
+    printf("[+] socks5 ports: [%d], control ports: [%d]\n", socksPort, controlPort);
 
 #ifndef WIN32
     pthread_t socks_thread, control_thread;
@@ -30,14 +30,14 @@ int reverseProxyServer(int controlPort, int socksPort) {
 #endif
 
     // Start reverse socks port listener thread
-    int result = creatThread_multi_Platform(socks_thread, start_reverse_socksPort, socksPort);
+    int result = creatThread_multi_Platform(socks_thread, start_reverse_socksPort, &socksPort);
     if (result < 0) {
         fprintf(stderr, "[-] Error: Failed to start reverse socks server on port %d\n", socksPort);
         return -1;
     }
 
     // Start control socket listener thread
-    result = creatThread_multi_Platform(control_thread, start_control_socket, controlPort);
+    result = creatThread_multi_Platform(control_thread, start_control_socket, &controlPort);
     if (result < 0) {
         fprintf(stderr, "[-] Error: Failed to start control server on port %d\n", controlPort);
         return -1;

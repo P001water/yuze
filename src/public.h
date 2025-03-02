@@ -22,7 +22,6 @@ typedef struct {
 #include <Windows.h>
 #pragma comment(lib, "Ws2_32.lib")
 
-
 #define THREAD_RETURN DWORD WINAPI
 #define THREAD_PARAM LPVOID
 

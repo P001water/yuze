@@ -24,6 +24,7 @@ set(SRCFILE
 
 # 将源代码添加到此项目的可执行文件。
 add_executable(yuze ${SRCFILE})
+target_link_libraries(yuze pthread)
 
 # 设置 C 标准
 if (CMAKE_VERSION VERSION_GREATER 3.12)
