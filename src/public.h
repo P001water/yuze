@@ -6,6 +6,7 @@
 #include<stdio.h>
 #include<string.h>   
 #include<stdlib.h> 
+#include <time.h>
 
 // 定义结构体存储线程参数
 typedef struct {
@@ -13,6 +14,7 @@ typedef struct {
     const char* user;
     const char* password;
 } ThreadArgs;
+
 
 // 修正跨平台线程创建宏
 #ifdef _WIN32
@@ -73,7 +75,6 @@ typedef struct {
 
 // UDP buffer size
 #define UDP_BUFFER_SIZE 65535
-
 
 
 #endif // !_PUBLIC_H_

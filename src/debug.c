@@ -1,6 +1,4 @@
-#include <Windows.h>
-#include <stdio.h>
-#include <time.h>
+#include "public.h"
 
 void dbg_log(const char* format, ...)
 {

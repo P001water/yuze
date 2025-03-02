@@ -44,6 +44,7 @@ install/
 # Debug and release build directories
 /out/build/
 /out/install/
+/.vs
 
 # IDE metadata
 .vscode/
