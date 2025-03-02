@@ -34,13 +34,14 @@ typedef struct {
 
 #else
 #include <errno.h>
-#include <unistd.h>
 #include <pthread.h>
 #include <netdb.h>
 #include <sys/select.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <signal.h>
+#include <fcntl.h>     // 包含 fcntl、F_GETFL、F_SETFL、O_NONBLOCK 的定义
+#include <unistd.h>    // 包含 POSIX 接口，如文件描述符操作
 
 #define THREAD_RETURN void*
 #define THREAD_PARAM void*

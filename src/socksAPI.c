@@ -68,7 +68,7 @@ int socket_acceptClient(int server_socket) {
 
     while (True) {
         struct sockaddr_in sa;
-        int slen = sizeof(sa);
+        socklen_t slen = sizeof(sa);
         s = accept(server_socket, (struct sockaddr*)&sa, &slen);
         if (s == -1) {
             if (errno == EINTR)
