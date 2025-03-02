@@ -12,8 +12,8 @@ typedef struct rsocksStruct {
 int reverseProxy(int controlPort, int socksPort, const char* connect_server, const char* user, const char* password);
 
 int reverseProxyServer(int controlPort, int socksPort);
-int start_reverse_socksPort(int* socksPort);
-int start_control_socket(int* controlPort);
+int start_reverse_socksPort(int socksPort);
+int start_control_socket(int controlPort);
 
 int reverseProxyClient(const char* target_server, const char* user, const char* password);
 int reverseClient_build_tunnel(rsocksStructalias* rserverConfig);
