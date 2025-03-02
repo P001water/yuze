@@ -1,7 +1,5 @@
 #include "public.h"
 
-#include "public.h"
-
 // Simple port forwarder function
 void port_forward(int listen_port, const char* forward_address) {
     char forward_server[256] = "127.0.0.1"; // Default IP address

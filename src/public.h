@@ -8,7 +8,6 @@
 #include<stdlib.h> 
 #include <time.h>
 
-// 定义结构体存储线程参数
 typedef struct {
     int client_sock;
     const char* user;
@@ -22,10 +21,17 @@ typedef struct {
 #include <ws2tcpip.h>
 #include <Windows.h>
 #pragma comment(lib, "Ws2_32.lib")
+
+
+#define THREAD_RETURN DWORD WINAPI
+#define THREAD_PARAM LPVOID
+
 #define creatThread_multi_Platform(thread_id, funcName, param) \
     thread_id = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)funcName, (LPVOID)param, 0, NULL);
+
 #define HANDLE_ID_multi_Platform HANDLE
 #define sleep_multi_Platform(param) Sleep(param)
+
 #else
 #include <errno.h>
 #include <unistd.h>
@@ -35,11 +41,19 @@ typedef struct {
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <signal.h>
+
+#define THREAD_RETURN void*
+#define THREAD_PARAM void*
+
 #define creatThread_multi_Platform(thread_id, funcName, param) \
     pthread_create(&thread_id, NULL, funcName, (void*)param);
+
 #define HANDLE_ID_multi_Platform pthread_t
+
 #define sleep_multi_Platform(param) sleep(param)
+
 #endif
+
 
 // self-write C function module
 #include "socks5Proto.h"
