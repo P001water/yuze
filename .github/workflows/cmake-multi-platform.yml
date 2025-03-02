@@ -86,12 +86,17 @@ jobs:
       run: |
         OUTPUT_FILE="yuze-${{ runner.os }}-${{ runner.arch }}${{ runner.os == 'Windows' && '.exe' || '' }}"
         BUILD_DIR="${{ steps.strings.outputs.build-output-dir }}"
-        # 确认路径格式统一处理
         BUILD_DIR=$(echo "$BUILD_DIR" | sed 's#\\#/#g')
 
-        echo "Renaming from $BUILD_DIR/yuze* to $BUILD_DIR/$OUTPUT_FILE"
-        mv $BUILD_DIR/yuze* $BUILD_DIR/$OUTPUT_FILE
+        # Windows 使用 Visual Studio 生成器，二进制文件在 Release 文件夹下
+        if [ "${{ runner.os }}" == "Windows" ]; then
+          SOURCE_FILE="$BUILD_DIR/Release/yuze.exe"
+        else
+          SOURCE_FILE="$BUILD_DIR/yuze"
+        fi
 
+        echo "Renaming from $SOURCE_FILE to $BUILD_DIR/$OUTPUT_FILE"
+        mv "$SOURCE_FILE" "$BUILD_DIR/$OUTPUT_FILE"
 
     - name: Upload build artifacts
       uses: actions/upload-artifact@v4
