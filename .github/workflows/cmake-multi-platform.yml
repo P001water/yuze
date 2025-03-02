@@ -82,8 +82,9 @@ jobs:
       run: ctest --build-config ${{ matrix.build_type }}
 
     - name: Rename binary for clarity
+      shell: bash # 强制使用 bash，确保一致性
       run: |
-        OUTPUT_FILE=yuze-${{ runner.os }}-${{ runner.arch }}${{ runner.os == 'Windows' && '.exe' || '' }}
+        OUTPUT_FILE="yuze-${{ runner.os }}-${{ runner.arch }}${{ runner.os == 'Windows' && '.exe' || '' }}"
         mv ${{ steps.strings.outputs.build-output-dir }}/yuze* ${{ steps.strings.outputs.build-output-dir }}/$OUTPUT_FILE
 
     - name: Upload build artifacts
