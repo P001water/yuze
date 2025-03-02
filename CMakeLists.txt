@@ -23,8 +23,6 @@ set(SRCFILE
 )
 
 # 将源代码添加到此项目的可执行文件。
-set(CMAKE_EXE_LINKER_FLAGS "-static")
-
 add_executable(yuze_cmake ${SRCFILE})
 
 # 设置 C 标准

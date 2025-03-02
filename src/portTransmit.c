@@ -1,8 +1,6 @@
 #include "portTransmit.h"
 #include "public.h" 
 
-//design for reverse connect service
-int control_socket;
 
 // -m yuze_tran -s 7878 -d 127.0.0.1 -e 9999 将7878 端口收到的socks代理请求转交给127.0.0.1打开正向监听的主机
 int yuze_tran(int refPort, char* destHost, int destPort) {
