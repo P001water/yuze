@@ -24,7 +24,14 @@ set(SRCFILE
 
 # 将源代码添加到此项目的可执行文件。
 add_executable(yuze ${SRCFILE})
-target_link_libraries(yuze pthread)
+# 根据平台条件链接适当的线程库
+if(WIN32)
+    # Windows 平台，使用 Windows 的线程库，不需要 pthread
+    target_link_libraries(yuze PRIVATE)
+else()
+    # Linux 和 macOS 平台，链接 pthread 库
+    target_link_libraries(yuze PRIVATE pthread)
+endif()
 
 # 设置 C 标准
 if (CMAKE_VERSION VERSION_GREATER 3.12)
