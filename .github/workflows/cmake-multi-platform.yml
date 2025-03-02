@@ -82,10 +82,16 @@ jobs:
       run: ctest --build-config ${{ matrix.build_type }}
 
     - name: Rename binary for clarity
-      shell: bash # 强制使用 bash，确保一致性
+      shell: bash
       run: |
         OUTPUT_FILE="yuze-${{ runner.os }}-${{ runner.arch }}${{ runner.os == 'Windows' && '.exe' || '' }}"
-        mv ${{ steps.strings.outputs.build-output-dir }}/yuze* ${{ steps.strings.outputs.build-output-dir }}/$OUTPUT_FILE
+        BUILD_DIR="${{ steps.strings.outputs.build-output-dir }}"
+        # 确认路径格式统一处理
+        BUILD_DIR=$(echo "$BUILD_DIR" | sed 's#\\#/#g')
+
+        echo "Renaming from $BUILD_DIR/yuze* to $BUILD_DIR/$OUTPUT_FILE"
+        mv $BUILD_DIR/yuze* $BUILD_DIR/$OUTPUT_FILE
+
 
     - name: Upload build artifacts
       uses: actions/upload-artifact@v4
