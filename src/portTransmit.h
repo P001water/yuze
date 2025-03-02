@@ -12,7 +12,6 @@ typedef struct slaveStruct {
 
 int yuze_slave(char* ref_host, int ref_port, char* dest_host, int dest_port);
 int yuze_tran(int refPort, char* destHost, int destPort);
-int yuze_listen(int refPort, int destPort);
 
 int yuzelisten_create_clntPortServer(int* lstPort);
 int yuzelisten_create_rsocksPortServer(int* p_rlstPort);
