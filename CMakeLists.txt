@@ -23,11 +23,11 @@ set(SRCFILE
 )
 
 # 将源代码添加到此项目的可执行文件。
-add_executable(yuze_cmake ${SRCFILE})
+add_executable(yuze ${SRCFILE})
 
 # 设置 C 标准
 if (CMAKE_VERSION VERSION_GREATER 3.12)
-  set_property(TARGET yuze_cmake PROPERTY C_STANDARD 11)
+  set_property(TARGET yuze PROPERTY C_STANDARD 11)
 endif()
 
 # TODO: 如有需要，请添加测试并安装目标。
