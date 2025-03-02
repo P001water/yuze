@@ -12,9 +12,9 @@ typedef struct rsocksStruct {
 int reverseProxy(int controlPort, int socksPort, const char* connect_server, const char* user, const char* password);
 
 int reverseProxyServer(int controlPort, int socksPort);
-int start_reverse_socksPort(int socksPort);
-int start_control_socket(int controlPort);
+int start_reverse_socksPort(void* arg);
+int start_control_socket(void* arg);
 
 int reverseProxyClient(const char* target_server, const char* user, const char* password);
-int reverseClient_build_tunnel(rsocksStructalias* rserverConfig);
+int reverseClient_build_tunnel(void* arg);
 int connect2controlSocket(char* revserProxyServer, int crontrolPort);

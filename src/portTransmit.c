@@ -47,6 +47,7 @@ int yuze_tran(int refPort, char* destHost, int destPort) {
     //        }
     //    }
     //}
+    return -1;
 }
 
 
@@ -108,6 +109,7 @@ int yuze_slave(char* ref_host, int ref_port, char* dest_host, int dest_port) {
 //            }
 //        }
 //    }
+    return -1;
 }
 
 int yuzeslave_build_tunnel(slaveStructalias* slavesConfig) {
@@ -134,6 +136,7 @@ int yuzeslave_build_tunnel(slaveStructalias* slavesConfig) {
     //if (dest_socket > 0) { // Check the sockets proto version
     //    tunnel_sock_to_sock(proxySocket, dest_socket);
     //}
+    return -1;
 }
 
 

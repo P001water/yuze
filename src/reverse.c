@@ -52,7 +52,8 @@ int reverseProxyServer(int controlPort, int socksPort) {
 }
 
 // for listen socket connect from client 
-int start_reverse_socksPort(int socksPort) {
+int start_reverse_socksPort(void* arg) {
+    int socksPort = *((int*)arg);
     char sendbuf[REVERSEPROXY_NOTICE_LEN], recvbuf[REVERSEPROXY_NOTICE_LEN];
     int sendlen, recvlen;
 
@@ -65,7 +66,7 @@ int start_reverse_socksPort(int socksPort) {
 
     while (True) {
         struct sockaddr_in sa;
-        int slen = sizeof(sa);
+        socklen_t slen = sizeof(sa);
         int s = accept(serv_sock, (struct sockaddr*)&sa, &slen);
         if (s < 0) {
             if (errno == EINTR)
@@ -87,7 +88,8 @@ int start_reverse_socksPort(int socksPort) {
 }
 
 // Control socket listener for reverse connection host
-int start_control_socket(int controlPort) {
+int start_control_socket(void* arg) {
+    int controlPort = *((int*)arg);
     char sendbuf[REVERSEPROXY_NOTICE_LEN], recvbuf[REVERSEPROXY_NOTICE_LEN];
     int sendlen, recvlen;
 
@@ -101,7 +103,7 @@ int start_control_socket(int controlPort) {
 
     while (True) {
         struct sockaddr_in sa;
-        int slen = sizeof(sa);
+        socklen_t slen = sizeof(sa);
         int s = accept(serv_sock, (struct sockaddr*)&sa, &slen);
         if (s == -1) {
             if (errno == EINTR)
@@ -256,7 +258,8 @@ int connect2controlSocket(char* revserProxyServer, int crontrolPort) {
     return controlSocket;
 }
 
-int reverseClient_build_tunnel(rsocksStructalias* rserverConfig) {
+int reverseClient_build_tunnel(void* arg) {
+    rsocksStructalias* rserverConfig = (rsocksStructalias*)arg; // Cast the argument
     char rhost[300];
     char NewSocketNoticebuff[REVERSEPROXY_NOTICE_LEN];
 
