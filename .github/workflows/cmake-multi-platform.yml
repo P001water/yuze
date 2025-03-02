@@ -81,8 +81,16 @@ jobs:
       # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
       run: ctest --build-config ${{ matrix.build_type }}
 
+    - name: Rename binary for clarity
+      run: |
+        OUTPUT_FILE=yuze-${{ runner.os }}-${{ runner.arch }}${{ runner.os == 'Windows' && '.exe' || '' }}
+        mv ${{ steps.strings.outputs.build-output-dir }}/yuze* ${{ steps.strings.outputs.build-output-dir }}/$OUTPUT_FILE
+
     - name: Upload build artifacts
       uses: actions/upload-artifact@v4
       with:
         name: build-artifacts-${{ matrix.os }}-${{ matrix.c_compiler }}
-        path: ${{ steps.strings.outputs.build-output-dir }}/*
+        path: ${{ steps.strings.outputs.build-output-dir }}/yuze-${{ runner.os }}-${{ runner.arch }}*
+        if-no-files-found: error
+        retention-days: 7
+
