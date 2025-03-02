@@ -12,7 +12,7 @@ int socks5_authenticate(int client_sock, const char* user, const char* password)
 #ifdef _WIN32
 DWORD WINAPI Socks5RroxyCMD_and_tunnel(LPVOID arg);
 #else
-void* SocksCMD_and_tunnel(void* arg);
+void* Socks5RroxyCMD_and_tunnel(void* arg);
 #endif
 
 int send_auth_method_response(int client_sock, unsigned char selected_method);

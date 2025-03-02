@@ -6,7 +6,7 @@
 #ifdef _WIN32
 DWORD WINAPI Socks5RroxyCMD_and_tunnel(LPVOID arg)
 #else
-void* SocksCMD_and_tunnel(void* arg)
+void* Socks5RroxyCMD_and_tunnel(void* arg)
 #endif
 {
     ThreadArgs* args = (ThreadArgs*)arg;
