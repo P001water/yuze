@@ -52,7 +52,7 @@ int reverseProxyServer(int controlPort, int socksPort) {
 }
 
 // for listen socket connect from client 
-int start_reverse_socksPort(void* arg) {
+void* start_reverse_socksPort(void* arg) {
     int socksPort = *((int*)arg);
     char sendbuf[REVERSEPROXY_NOTICE_LEN], recvbuf[REVERSEPROXY_NOTICE_LEN];
     int sendlen, recvlen;
@@ -82,13 +82,13 @@ int start_reverse_socksPort(void* arg) {
         sendlen = socket_send(control_socket, sendbuf, REVERSEPROXY_NOTICE_LEN);
         if (sendlen != REVERSEPROXY_NOTICE_LEN) {
             puts("[-] No Control_socket");
-            return -1;
+            return NULL;
         }
     }
 }
 
 // Control socket listener for reverse connection host
-int start_control_socket(void* arg) {
+void* start_control_socket(void* arg) {
     int controlPort = *((int*)arg);
     char sendbuf[REVERSEPROXY_NOTICE_LEN], recvbuf[REVERSEPROXY_NOTICE_LEN];
     int sendlen, recvlen;
@@ -147,7 +147,7 @@ int start_control_socket(void* arg) {
             close(s);
         }
     }
-    return -1;
+    return NULL;
 }
 
 
@@ -258,7 +258,7 @@ int connect2controlSocket(char* revserProxyServer, int crontrolPort) {
     return controlSocket;
 }
 
-int reverseClient_build_tunnel(void* arg) {
+void* reverseClient_build_tunnel(void* arg) {
     rsocksStructalias* rserverConfig = (rsocksStructalias*)arg; // Cast the argument
     char rhost[300];
     char NewSocketNoticebuff[REVERSEPROXY_NOTICE_LEN];
@@ -278,21 +278,21 @@ int reverseClient_build_tunnel(void* arg) {
     int sendlen = socket_send(proxySocket, NewSocketNoticebuff, REVERSEPROXY_NOTICE_LEN);
     if (sendlen != REVERSEPROXY_NOTICE_LEN) {
         puts("[-] Error on Send");
-        return -1;
+        return NULL;
     }
 
     // 执行SOCKS5认证
     if (socks5_authenticate(proxySocket, user, password) != 0) {
         dbg_log("[-] Authentication failed with client\n");
         socket_close(proxySocket);
-        return -1;
+        return NULL;
     }
 
     int dest_sock = ParseSocksCMD(proxySocket);
     if (dest_sock == -1) {
         dbg_log("[-] Failed to resolve destination\n");
         socket_close(proxySocket);
-        return -1;
+        return NULL;
     }
 
     // 建立数据传输隧道
