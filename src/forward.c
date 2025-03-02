@@ -23,8 +23,9 @@ void port_forward(int listen_port, const char* forward_address) {
 
     while (True) {  
         struct sockaddr_in sa;
-        int slen = sizeof(sa);
+        socklen_t slen = sizeof(sa);
         int client_sock = accept(listen_sock, (struct sockaddr*)&sa, &slen);
+
         if (client_sock < 0) {
             if (errno == EINTR)
                 continue;

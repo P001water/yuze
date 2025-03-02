@@ -52,15 +52,14 @@ int reverseProxyServer(int controlPort, int socksPort) {
 }
 
 // for listen socket connect from client 
-int start_reverse_socksPort(int* socksPort) {
-    int lstPort = socksPort;
+int start_reverse_socksPort(int socksPort) {
     char sendbuf[REVERSEPROXY_NOTICE_LEN], recvbuf[REVERSEPROXY_NOTICE_LEN];
     int sendlen, recvlen;
 
-    int serv_sock = create_tcp_listening_socket(lstPort, 500);
+    int serv_sock = create_tcp_listening_socket(socksPort, 500);
     if (serv_sock < 0)
     {
-        printf("[-] Error: --> Unable to start server on port %d.\n", lstPort);
+        printf("[-] Error: --> Unable to start server on port %d.\n", socksPort);
         exit(1);
     }
 
@@ -88,7 +87,7 @@ int start_reverse_socksPort(int* socksPort) {
 }
 
 // Control socket listener for reverse connection host
-int start_control_socket(int* controlPort) {
+int start_control_socket(int controlPort) {
     char sendbuf[REVERSEPROXY_NOTICE_LEN], recvbuf[REVERSEPROXY_NOTICE_LEN];
     int sendlen, recvlen;
 
@@ -158,7 +157,7 @@ int reverseProxyClient(const char* target_server, const char* user, const char* 
     char server_ip[128];
     int server_port;
     sscanf(target_server, "%[^:]:%d", server_ip, &server_port);
-    printf("[+] Reverse Client %s:%d", server_ip, server_port);
+    printf("[+] Reverse Client %s:%d\n", server_ip, server_port);
 
     while (1) {
         int control_socket = connect2controlSocket(server_ip, server_port);

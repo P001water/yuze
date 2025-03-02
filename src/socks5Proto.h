@@ -15,7 +15,8 @@ DWORD WINAPI Socks5RroxyCMD_and_tunnel(LPVOID arg);
 void* SocksCMD_and_tunnel(void* arg);
 #endif
 
-
+int send_auth_method_response(int client_sock, unsigned char selected_method);
+int receive_socks_version(int client_sock);
 
 int check_proto_version(int clnt_socket);
 int ParseSocksCMD(int clnt_socket);
