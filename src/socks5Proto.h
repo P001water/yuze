@@ -17,6 +17,8 @@ void* SocksCMD_and_tunnel(void* arg);
 
 int send_auth_method_response(int client_sock, unsigned char selected_method);
 int receive_socks_version(int client_sock);
+int receive_auth_methods(int client_sock, unsigned char* methods, unsigned char* num_methods);
+int perform_username_password_authentication(int client_sock, const char* user, const char* password);
 
 int check_proto_version(int clnt_socket);
 int ParseSocksCMD(int clnt_socket);
