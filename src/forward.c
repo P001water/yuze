@@ -36,7 +36,7 @@ void port_forward(int listen_port, const char* forward_address) {
         int forward_sock = socket_connect(forward_server, forward_port);
         if (forward_sock < 0) {
             puts("[-] Error: Unable to connect to forward target");
-            close(client_sock);
+            socket_close(client_sock);
             continue;
         }
 
@@ -45,5 +45,5 @@ void port_forward(int listen_port, const char* forward_address) {
 
         tunnel_sock_to_sock(client_sock, forward_sock);
     }
-    close(listen_sock);
+    socket_close(listen_sock);
 }

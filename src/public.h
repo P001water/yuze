@@ -17,9 +17,9 @@ typedef struct {
 
 // 修正跨平台线程创建宏
 #ifdef _WIN32
-#include <WinSock2.h>
+#include <winsock2.h>
 #include <ws2tcpip.h>
-#include <Windows.h>
+#include <windows.h>
 #pragma comment(lib, "Ws2_32.lib")
 
 #define THREAD_RETURN DWORD WINAPI

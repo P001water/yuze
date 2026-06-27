@@ -119,7 +119,7 @@ void* start_control_socket(void* arg) {
         int recvlen = socket_recv(s, recvbuf, REVERSEPROXY_NOTICE_LEN);
         if (recvlen != REVERSEPROXY_NOTICE_LEN) {
             puts("[-] Error: Invalid data received from client");
-            close(s);
+            socket_close(s);
             continue;
         }
 
@@ -129,7 +129,7 @@ void* start_control_socket(void* arg) {
             sendlen = socket_send(s, sendbuf, REVERSEPROXY_NOTICE_LEN);
             if (sendlen != REVERSEPROXY_NOTICE_LEN) {
                 puts("[-] Error: Failed to confirm control socket");
-                close(s);
+                socket_close(s);
                 continue;
             }
             control_socket = s;
@@ -139,12 +139,12 @@ void* start_control_socket(void* arg) {
             int tunnel_id = recvbuf[2] - '0' + 48;
             if (tunnel_set_destSocket_and_run_it(tunnel_id, s) < 0) {
                 puts("[-] Error: Failed to set up new proxy socket");
-                close(s);
+                socket_close(s);
             }
         }
         else {
             dbg_log("[-] Error: Unknown socket type received");
-            close(s);
+            socket_close(s);
         }
     }
     return NULL;

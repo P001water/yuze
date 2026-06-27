@@ -27,7 +27,7 @@ add_executable(yuze ${SRCFILE})
 # 根据平台条件链接适当的线程库
 if(WIN32)
     # Windows 平台，使用 Windows 的线程库，不需要 pthread
-    target_link_libraries(yuze PRIVATE)
+    target_link_libraries(yuze PRIVATE ws2_32)
 else()
     # Linux 和 macOS 平台，链接 pthread 库
     target_link_libraries(yuze PRIVATE pthread)
