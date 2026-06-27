@@ -31,7 +31,7 @@ int create_tcp_listening_socket(int port, int backlog)
     // Allow address reuse
     if (setsockopt(server_socket, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0) {
         perror("Failed to set socket options");
-        close(server_socket);
+        socket_close(server_socket);
         return -1;
     }
 
@@ -43,14 +43,14 @@ int create_tcp_listening_socket(int port, int backlog)
     // Bind socket to the specified address and port
     if (bind(server_socket, (struct sockaddr*)&server_addr, sizeof(server_addr)) < 0) {
         perror("Failed to bind socket");
-        close(server_socket);
+        socket_close(server_socket);
         return -1;
     }
 
     // Start listening for incoming connections
     if (listen(server_socket, backlog) < 0) {
         perror("Failed to listen on socket");
-        close(server_socket);
+        socket_close(server_socket);
         return -1;
     }
 
@@ -152,7 +152,7 @@ int socket_close(int socket) {
 #ifdef WIN32
         closesocket(socket);
 #else
-        close(socket);
+        socket_close(socket);
 #endif
     }
     return 1;
@@ -247,7 +247,7 @@ int socket_initUdpServer(int port) {
 
     if (bind(udp_sock, (struct sockaddr*)&server_addr, sizeof(server_addr)) < 0) {
         perror("[-] Failed to bind UDP socket");
-        close(udp_sock);
+        socket_close(udp_sock);
         return -1;
     }
 
